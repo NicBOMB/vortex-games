@@ -16,9 +16,9 @@ function query(baseUrl: string, request: string): Promise<any> {
     https.get(getRequest, (res: IncomingMessage) => {
       res.setEncoding('utf-8');
       const msgHeaders: IncomingHttpHeaders = res.headers;
-      const callsRemaining = parseInt(util.getSafe(msgHeaders, ['x-ratelimit-remaining'], '0'), 10);
+      const callsRemaining = parseInt(msgHeaders['x-ratelimit-remaining'] as string|undefined ?? '0', 10);
       if ((res.statusCode === 403) && (callsRemaining === 0)) {
-        const resetDate = parseInt(util.getSafe(msgHeaders, ['x-ratelimit-reset'], '0'), 10);
+        const resetDate = parseInt(msgHeaders['x-ratelimit-reset'] as string|undefined ?? '0', 10);
         log('info', 'GitHub rate limit exceeded',
           { reset_at: (new Date(resetDate)).toString() });
         return reject(new util.ProcessCanceled('GitHub rate limit exceeded'));
@@ -128,8 +128,8 @@ export async function getLatestReleases(currentVersion: string) {
       }
       const current = releases
         .filter(rel => {
-          const tagName = util.getSafe(rel, ['tag_name'], undefined);
-          const isPreRelease = util.getSafe(rel, ['prerelease'], false);
+          const tagName = rel?.tag_name;
+          const isPreRelease = rel?.prerelease ?? false;
           const version = semver.valid(tagName);
 
           return (!isPreRelease
@@ -144,7 +144,6 @@ export async function getLatestReleases(currentVersion: string) {
 }
 
 async function startDownload(api: types.IExtensionApi, downloadLink: string) {
-  // tslint:disable-next-line: no-shadowed-variable - why is this even required ?
   const redirectionURL = await new Promise((resolve, reject) => {
     https.request(getRequestOptions(downloadLink), res => {
       return resolve(res.headers['location']);

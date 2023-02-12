@@ -1,5 +1,5 @@
-const path = require('path');
-const { fs, types, util } = require('vortex-api');
+import path from 'path';
+import { fs, types, util } from 'vortex-api';
 
 const GAME_ID = 'pathfinderwrathoftherighteous';
 const NAME = 'Pathfinder: Wrath\tof the Righteous';
@@ -20,7 +20,7 @@ async function resolveGameVersion(discoveryPath: string) {
   try {
     const data = await fs.readFileAsync(versionFilepath, { encoding: 'utf8' });
     const segments = data.split(' ');
-    return (segments[3]) 
+    return (segments[3])
       ? Promise.resolve(segments[3])
       : Promise.reject(new util.DataInvalid('Failed to resolve version'));
   } catch (err) {
@@ -28,7 +28,7 @@ async function resolveGameVersion(discoveryPath: string) {
   }
 }
 
-function main(context) {
+function main(context: types.IExtensionContext) {
   context.requireExtension('modtype-umm');
   context.registerGame(
     {
@@ -43,7 +43,7 @@ function main(context) {
       requiredFiles: ['Wrath.exe'],
       environment: {
         SteamAPPId: STEAM_ID,
-      }, 
+      },
       details:
       {
         steamAppId: +STEAM_ID,
@@ -62,6 +62,4 @@ function main(context) {
   return true;
 }
 
-module.exports = {
-    default: main
-};
+export default main;

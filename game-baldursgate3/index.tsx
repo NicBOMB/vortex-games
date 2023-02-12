@@ -381,7 +381,7 @@ async function getOwnGameVersion(state: types.IState): Promise<string> {
 
 async function getActivePlayerProfile(api: types.IExtensionApi) {
   return gameSupportsProfile(await getOwnGameVersion(api.getState()))
-    ? api.store.getState().settings.baldursgate3?.playerProfile || 'global'
+    ? api.store.getState().settings['baldursgate3']?.playerProfile || 'global'
     : 'Public';
 }
 
@@ -485,8 +485,8 @@ function getLatestLSLibMod(api: types.IExtensionApi) {
   }
   const lsLib: types.IMod = Object.keys(mods).reduce((prev: types.IMod, id: string) => {
     if (mods[id].type === 'bg3-lslib-divine-tool') {
-      const latestVer = util.getSafe(prev, ['attributes', 'version'], '0.0.0');
-      const currentVer = util.getSafe(mods[id], ['attributes', 'version'], '0.0.0');
+      const latestVer = prev?.attributes?.version ?? '0.0.0';
+      const currentVer = mods[id]?.attributes?.version ?? '0.0.0';
       try {
         if (semver.gt(currentVer, latestVer)) {
           prev = mods[id];
@@ -712,7 +712,7 @@ async function writeModSettings(api: types.IExtensionApi, data: IModSettings, bg
     return;
   }
 
-  const settingsPath = (bg3profile !== 'global') 
+  const settingsPath = (bg3profile !== 'global')
     ? path.join(profilesPath(), bg3profile, 'modsettings.lsx')
     : path.join(globalProfilePath(), 'modsettings.lsx');
 
@@ -743,12 +743,11 @@ async function readStoredLO(api: types.IExtensionApi) {
   // return util.setSafe(state, ['settingsWritten', profile], { time, count });
   const state = api.store.getState();
   const vProfile = selectors.activeProfile(state);
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
-  const enabled = Object.keys(mods).filter(id =>
-    util.getSafe(vProfile, ['modState', id, 'enabled'], false));
-  const bg3profile: string = state.settings.baldursgate3?.playerProfile;
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
+  const enabled = Object.keys(mods).filter((id) => vProfile?.modState?.[id]?.enabled);
+  const bg3profile: string = state.settings['baldursgate3']?.playerProfile;
   if (enabled.length > 0 && modNodes.length === 1) {
-    const lastWrite = state.settings.baldursgate3?.settingsWritten?.[bg3profile];
+    const lastWrite = state.settings['baldursgate3']?.settingsWritten?.[bg3profile];
     if ((lastWrite !== undefined) && (lastWrite.count > 1)) {
       api.showDialog('info', '"modsettings.lsx" file was reset', {
         text: 'The game reset the list of active mods and ran without them.\n'
@@ -972,15 +971,13 @@ function InfoPanelWrap(props: { api: types.IExtensionApi, refresh: () => void })
 
 function getLatestInstalledLSLibVer(api: types.IExtensionApi) {
   const state = api.getState();
-  const mods: { [modId: string]: types.IMod } =
-    util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
 
   return Object.keys(mods).reduce((prev, id) => {
     if (mods[id].type === 'bg3-lslib-divine-tool') {
       const arcId = mods[id].archiveId;
-      const dl: types.IDownload = util.getSafe(state,
-        ['persistent', 'downloads', 'files', arcId], undefined);
-      const storedVer = util.getSafe(mods[id], ['attributes', 'version'], '0.0.0');
+      const dl = state?.persistent?.downloads?.files?.[arcId];
+      const storedVer = mods[id]?.attributes?.['version'] ?? '0.0.0';
 
       try {
         if (semver.gt(storedVer, prev)) {
@@ -1102,9 +1099,8 @@ function main(context: types.IExtensionContext) {
 
   context.registerAction('mod-icons', 300, 'settings', {}, 'Re-install LSLib/Divine', () => {
     const state = context.api.getState();
-    const mods: { [modId: string]: types.IMod } =
-      util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
-    const lslibs = Object.keys(mods).filter(mod => mods[mod].type === 'bg3-lslib-divine-tool');
+    const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
+    const lslibs = Object.keys(mods).filter((mod) => mods[mod].type === 'bg3-lslib-divine-tool');
     context.api.events.emit('remove-mods', GAME_ID, lslibs, (err) => {
       if (err !== null) {
         context.api.showErrorNotification('Failed to reinstall lslib',

@@ -23,13 +23,12 @@ export function genProps(context: types.IExtensionContext, profileId?: string): 
     return undefined;
   }
 
-  const discovery: types.IDiscoveryResult = util.getSafe(state,
-    ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
   if (discovery?.path === undefined) {
     return undefined;
   }
 
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   return { api, state, profile, mods, discovery };
 }
 
@@ -61,7 +60,7 @@ export function makePrefix(input: number) {
     res = String.fromCharCode(65 + (rest % 25)) + res;
     rest = Math.floor(rest / 25);
   }
-  return util.pad((res as any), 'A', 3);
+  return util.pad(res, 'A', 3);
 }
 
 export async function getPakFiles(basePath: string): Promise<string[]> {

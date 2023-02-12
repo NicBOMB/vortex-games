@@ -15,7 +15,7 @@ async function deserializeLoadOrder(api, mods = undefined) {
     return Promise.resolve([]);
   }
   if (mods === undefined) {
-    mods = util.getSafe(state, ['persistent', 'mods', MORROWIND_ID], {});
+    mods = state?.persistent?.mods?.[MORROWIND_ID] ?? {};
   }
   const fileMap = Object.keys(mods).reduce((accum, iter) => {
     const plugins = mods[iter]?.attributes?.plugins;

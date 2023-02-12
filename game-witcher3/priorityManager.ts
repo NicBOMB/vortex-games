@@ -93,8 +93,7 @@ export class PriorityManager {
       return undefined;
     }
 
-    const loadOrder: { [modId: string]: ILoadOrderEntry } = util.getSafe(state,
-      ['persistent', 'loadOrder', lastProfId], {});
+    const loadOrder = state?.persistent?.loadOrder?.[lastProfId] ?? {};
 
     const lockedEntries = Object.keys(loadOrder).filter(key => loadOrder[key]?.locked);
     const minPriority = (min) ? min : lockedEntries.length;

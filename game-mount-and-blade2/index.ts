@@ -225,8 +225,7 @@ async function prepareForModding(context, discovery, metaManager: ComMetadataMan
     setModdingTool(context, discovery);
   } catch (err) {
     const tools = discovery?.tools;
-    if ((tools !== undefined)
-    && (util.getSafe(tools, ['bannerlord-sdk'], undefined) !== undefined)) {
+    if (tools?.['bannerlord-sdk'] !== undefined) {
       setModdingTool(context, discovery, true);
     }
   }
@@ -279,7 +278,7 @@ async function prepareForModding(context, discovery, metaManager: ComMetadataMan
       //  Bannerlord without any active profile.
       return refreshGameParams(context, {});
     }
-    const loadOrder = util.getSafe(state, ['persistent', 'loadOrder', activeProfile.id], {});
+    const loadOrder = state?.persistent?.loadOrder?.[activeProfile.id] ?? {};
     return refreshGameParams(context, loadOrder);
   });
 }
@@ -410,10 +409,10 @@ function tSort(sortProps: ISortProps, test: boolean = false) {
 
 function isExternal(context, subModId) {
   const state = context.api.getState();
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   const modIds = Object.keys(mods);
   modIds.forEach(modId => {
-    const subModIds = util.getSafe(mods[modId], ['attributes', 'subModIds'], []);
+    const subModIds = mods[modId]?.attributes?.subModIds ?? [];
     if (subModIds.includes(subModId)) {
       return false;
     }
@@ -452,9 +451,9 @@ async function refreshCacheOnEvent(context: types.IExtensionContext,
       : Promise.reject(err);
   }
 
-  const loadOrder = util.getSafe(state, ['persistent', 'loadOrder', profileId], {});
+  const loadOrder = state?.persistent?.loadOrder?.[profileId] ?? {};
 
-  if (util.getSafe(state, ['settings', 'mountandblade2', 'sortOnDeploy', activeProfile.id], true)) {
+  if (state?.settings?.['mountandblade2']?.sortOnDeploy?.[activeProfile.id] ?? true) {
     return sortImpl(context, metaManager);
   } else {
     // We're going to do a quick tSort at this point - not going to
@@ -529,7 +528,7 @@ async function preSort(context, items, direction, updateType, metaManager) {
 
   // External ids will include official modules as well but not locked entries.
   const externalIds = modIds.filter(id => (!CACHE[id].isLocked) && (CACHE[id].vortexId === id));
-  const loadOrder = util.getSafe(state, ['persistent', 'loadOrder', activeProfile.id], {});
+  const loadOrder = state?.persistent?.loadOrder?.[activeProfile.id] ?? {};
   const LOkeys = ((Object.keys(loadOrder).length > 0)
     ? Object.keys(loadOrder)
     : LAUNCHER_DATA.singlePlayerSubMods.map(mod => mod.subModId));
@@ -684,7 +683,7 @@ function sortImpl(context: types.IExtensionContext, metaManager: ComMetadataMana
     return;
   }
 
-  const loadOrder = util.getSafe(state, ['persistent', 'loadOrder', activeProfile.id], {});
+  const loadOrder = state?.persistent?.loadOrder?.[activeProfile.id] ?? {};
 
   try {
     sortedLocked = tSort({ subModIds: lockedIds, allowLocked: true, metaManager });
@@ -843,8 +842,7 @@ function main(context) {
       await Bluebird.map(files, async (entry: { filePath: string, candidates: string[] }) => {
         // only act if we definitively know which mod owns the file
         if (entry.candidates.length === 1) {
-          const mod = util.getSafe(state.persistent.mods,
-            [GAME_ID, entry.candidates[0]], undefined);
+          const mod = state.persistent.mods?.[GAME_ID]?.[entry.candidates[0]];
           if (mod === undefined) {
             return Promise.resolve();
           }

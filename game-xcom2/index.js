@@ -41,7 +41,7 @@ const instructions = (gameId) => {
 }
 
 /*
-1.1 update based on the following information sources 
+1.1 update based on the following information sources
 https://support.feralinteractive.com/docs/en/xcom2warofthechosen/1.3/steam/faqs/?access=FOJzacYvnB
 https://www.gog.com/forum/xcom_2/actually_where_do_mods_go_in_this_version/page1
 */
@@ -61,7 +61,7 @@ function prepareForModding(discovery, modPath) {
   return fs.ensureDirAsync(path.join(discovery.path, modPath));
 }
 
-// The launcher is generic, but I want to show a different icon for WOTC :) 
+// The launcher is generic, but I want to show a different icon for WOTC :)
 function supportedTools(game) {
   return [
     {
@@ -141,7 +141,7 @@ function main(context) {
 
   // Register an installer for XCOM mods to sanity check the file structure and add details to the mods themselves.
   context.registerInstaller('xcom2-installer', 25, testMod, installMod);
-  
+
   // Register load order pages for both versions of the game.
   context.registerLoadOrder({
     gameId: XCOM2_ID,
@@ -167,7 +167,7 @@ function main(context) {
 // Installing functions
 
 function testMod(files, gameId) {
-  const supported = (gameId === XCOM2_ID || gameId === WOTC_ID) 
+  const supported = (gameId === XCOM2_ID || gameId === WOTC_ID)
     && (!!files.find(file => path.extname(file).toLowerCase() === MOD_EXT.toLowerCase()));
 
   return Promise.resolve({ supported, requiredFiles: [] });
@@ -222,14 +222,14 @@ function validate(prev, cur) {
 async function deserializeLoadOrder(api, gameId) {
   // Get the path to the game.
   const state = api.store.getState();
-  const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', gameId], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[gameId];
   if (!discovery?.path) return Promise.reject(new util.ProcessCanceled('The game could not be discovered.'));
 
   // Scan the mods folder for directories
   let folders = [];
   const modsPath = path.join(discovery.path, getModsPath(gameId));
   try {
-    // Get everything in the mods folder located in the game directory. 
+    // Get everything in the mods folder located in the game directory.
     const modFolders = await fs.readdirAsync(modsPath);
     // Iterate through the results of the folder scan.
     for (let idx in modFolders) {
@@ -327,7 +327,7 @@ async function deserializeLoadOrder(api, gameId) {
 async function serializeLoadOrder(api, loadOrder, gameId) {
   // Get the game install folder.
   const state = api.store.getState();
-  const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', gameId], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[gameId];
   if (!discovery?.path) return Promise.reject(new util.ProcessCanceled('The game could not be discovered.'));
   const optionsIni = path.join(discovery.path, optionsPath(gameId), MOD_OPTIONS);
 

@@ -28,7 +28,7 @@ function resetPrefixOffset(api: types.IExtensionApi) {
   }
 
   api.store.dispatch(setPrefixOffset(profileId, 0));
-  const loadOrder = util.getSafe(api.getState(), ['persistent', 'loadOrder', profileId], []);
+  const loadOrder = api.getState()?.persistent?.loadOrder?.[profileId] ?? [];
   const newLO = loadOrder.map((entry, idx) => ({
     ...entry,
     data: {
@@ -67,7 +67,7 @@ function setPrefixOffsetDialog(api: types.IExtensionApi) {
       }
 
       api.store.dispatch(setPrefixOffset(profileId, offset));
-      const loadOrder = util.getSafe(api.getState(), ['persistent', 'loadOrder', profileId], []);
+      const loadOrder = api.getState()?.persistent?.loadOrder?.[profileId] ?? [];
       const newLO = loadOrder.map(entry => ({
         ...entry,
         data: {
@@ -97,8 +97,7 @@ function parseAdditionalParameters(parameters: string) {
 
 async function prepareForModding(context: types.IExtensionContext,
                                  discovery: types.IDiscoveryResult) {
-  const requiresRestart = util.getSafe(context.api.getState(),
-    ['settings', '7daystodie', 'udf'], undefined) === undefined;
+  const requiresRestart = context.api.getState()?.settings?.['7daystodie']?.udf === undefined;
   const launcherSettings = launcherSettingsFilePath();
   const relaunchExt = () => {
     return context.api.showDialog('info', 'Restart Required', {
@@ -237,7 +236,7 @@ function toLOPrefix(context: types.IExtensionContext, mod: types.IMod): string {
   }
 
   // Retrieve the load order as stored in Vortex's application state.
-  const loadOrder = util.getSafe(props.state, ['persistent', 'loadOrder', props.profile.id], []);
+  const loadOrder = props.state?.persistent?.loadOrder?.[props.profile.id] ?? [];
 
   // Find the mod entry in the load order state and insert the prefix in front
   //  of the mod's name/id/whatever
@@ -248,7 +247,7 @@ function toLOPrefix(context: types.IExtensionContext, mod: types.IMod): string {
     //  It's important we find the prefix of the mod in this case, as the deployment
     //  method could potentially fail to remove the mod! We're going to check
     //  the previous load order saved for this profile and use that if it exists.
-    const prev = util.getSafe(props.state, ['settings', '7daystodie', 'previousLO', props.profile.id], []);
+    const prev = props.state?.settings?.['7daystodie']?.previousLO?.[props.profile.id] ?? [];
     loEntry = prev.find(loEntry => loEntry.id === mod.id);
   }
 
@@ -287,8 +286,7 @@ function InfoPanel(props) {
 function InfoPanelWrap(props: { api: types.IExtensionApi, profileId: string }) {
   const { api, profileId } = props;
   const currentOffset = useSelector((state: types.IState) =>
-    makePrefix(util.getSafe(state,
-      ['settings', '7daystodie', 'prefixOffset', profileId], 0)));
+    makePrefix(state?.settings?.['7daystodie']?.prefixOffset?.[profileId] ?? 0));
 
   return (
     <InfoPanel
@@ -303,7 +301,7 @@ function main(context: types.IExtensionContext) {
 
   const getModsPath = () => {
     const state = context.api.getState();
-    const udf = util.getSafe(state, ['settings', '7daystodie', 'udf'], undefined);
+    const udf = state?.settings?.['7daystodie']?.udf;
     return udf !== undefined ? path.join(udf, 'Mods') : 'Mods';
   }
 

@@ -12,24 +12,22 @@ export async function migrate100(context, oldVersion) {
   }
 
   const state = context.api.store.getState();
-  const discoveryPath = util.getSafe(state,
-    ['settings', 'gameMode', 'discovered', GAME_ID, 'path'], undefined);
+  const discoveryPath = state?.settings?.gameMode?.discovered?.[GAME_ID]?.path;
   const activatorId = selectors.activatorForGame(state, GAME_ID);
   const activator = util.getActivator(activatorId);
   if (discoveryPath === undefined || activator === undefined) {
     return Promise.resolve();
   }
 
-  const mods: { [modId: string]: types.IMod } = util.getSafe(state,
-    ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   if (Object.keys(mods).length === 0) {
     return Promise.resolve();
   }
 
-  const profiles = util.getSafe(state, ['persistent', 'profiles'], {});
+  const profiles = state?.persistent?.profiles ?? {};
   const loProfiles = Object.keys(profiles).filter(id => profiles[id]?.gameId === GAME_ID);
   const loMap: { [profId: string]: LoadOrder } = loProfiles.reduce((accum, iter) => {
-    const current = util.getSafe(state, ['persistent', 'loadOrder', iter], []);
+    const current = state?.persistent?.loadOrder?.[iter] ?? [];
     const newLO: LoadOrder = current.map(entry => {
       return {
         enabled: true,

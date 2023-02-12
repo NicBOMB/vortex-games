@@ -99,13 +99,12 @@ export async function deserialize(context: types.IExtensionContext): Promise<Loa
   // The deserialization function should be used to filter and insert wanted data into Vortex's
   //  loadOrder application state, once that's done, Vortex will trigger a serialization event
   //  which will ensure that the data is written to the LO file.
-  const currentModsState = util.getSafe(props.profile, ['modState'], {});
+  const currentModsState = props.profile?.modState ?? {};
 
   // we only want to insert enabled mods.
   const enabledModIds = Object.keys(currentModsState)
-    .filter(modId => util.getSafe(currentModsState, [modId, 'enabled'], false));
-  const mods: { [modId: string]: types.IMod } = util.getSafe(props.state,
-    ['persistent', 'mods', GAME_ID], {});
+    .filter(modId => currentModsState?.[modId]?.enabled ?? false);
+  const mods: { [modId: string]: types.IMod } = props.state?.persistent?.mods?.[GAME_ID] ?? {};
   let data: ILoadOrderEntry[] = [];
   let loFilePath;
   try {

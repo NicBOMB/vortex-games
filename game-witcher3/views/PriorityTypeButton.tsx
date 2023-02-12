@@ -44,7 +44,7 @@ class PriorityTypeButton extends ComponentEx<IProps, {}> {
 
 function mapStateToProps(state: types.IState, ownProps: IProps): IConnectedProps {
   return {
-    priorityType: util.getSafe(state, getPriorityTypeBranch(), 'prefix-based'),
+    priorityType: state?.settings?.['witcher3']?.prioritytype ?? 'prefix-based',
   };
 }
 

@@ -58,7 +58,7 @@ async function findGame() {
   const storeGames = await util.GameStoreHelper.find(gameStoreIds).catch(() => []);
 
   if (!storeGames.length) return;
-  
+
   if (storeGames.length > 1) log('debug', 'Mutliple copies of Oblivion found', storeGames.map(s => s.gameStoreId));
 
   const selectedGame = storeGames[0];
@@ -113,8 +113,8 @@ function prepareForModding(api: types.IExtensionApi, discovery: types.IDiscovery
                 'Vortex has selected the English variant by default. [br][/br][br][/br]'+
                 'If you would prefer to manage a different language you can change the path to the game using the "Manually Set Location" option in the games tab.',
               parameters: { gameName, storeName }
-            }, 
-            [ 
+            },
+            [
               { label: 'Close', action: () => api.suppressNotification(`${GAME_ID}-locale-message`) }
             ]
             );
@@ -185,7 +185,7 @@ function main(context: types.IExtensionContext) {
 
       const state = context.api.getState();
       const installPath = selectors.installPathForGame(state, MORROWIND_ID);
-      const mod = util.getSafe(state, ['persistent', 'mods', MORROWIND_ID, modId], undefined);
+      const mod = state?.persistent?.mods?.[MORROWIND_ID]?.[modId];
       if (installPath === undefined || mod === undefined) {
         return;
       }

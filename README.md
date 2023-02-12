@@ -2,6 +2,8 @@
 
 This repository contains a collection of all the game support extensions for Vortex.
 
+The packge.json is present only for the install script, which simplifies vortex_devel's build scripts.
+
 Most of these extensions are fairly simple as they only add the most basic functionality for a game
 to Vortex, that is: allowing the game to be discovered and basic mod management (downloading,
 installing, enabling/disabling)

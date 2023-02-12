@@ -79,7 +79,7 @@ async function ensureModType(discovery, api) {
   //  (We're doing this as users may jump between 8.4 and older versions)
   const targetModType = await getOfficialModType(api, discovery);
   const state = api.store.getState();
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
 
   // Not really invalid - just wrong modType for the currently installed game version.
   const invalidMods = Object.keys(mods).filter(key => isOfficialModType(mods[key]?.type)
@@ -258,7 +258,7 @@ async function writeLOToFile(api, loadOrder) {
 
 async function preSort(context, items, direction, refreshType) {
   const state = context.api.store.getState();
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   const activeProfile = selectors.activeProfile(state);
 
   const toLOPage = (itemList) => Promise.resolve(itemList);
@@ -291,7 +291,7 @@ async function preSort(context, items, direction, refreshType) {
   const managedModsDinput = await getDeployedManaged(context, 'dinput');
   const managedMods = [].concat(managedModsTarget, managedModsDinput);
   const managedItems = managedMods.map(item => toDisplayItem(item.modName, item.modId))
-  const loadOrder = util.getSafe(state, ['persistent', 'loadOrder', activeProfile.id], {});
+  const loadOrder = state?.persistent?.loadOrder?.[activeProfile.id] ?? {};
   const loKeys = Object.keys(loadOrder).sort((a, b) => loadOrder[a].pos - loadOrder[b].pos);
   const external = await getDeployedExternal(context, managedMods.map(mod => mod.modName), loKeys);
   const allExternal = [].concat(external.known, external.unknown);
@@ -320,7 +320,7 @@ async function preSort(context, items, direction, refreshType) {
   } else if (refreshType === 'drag-n-drop') {
     const getIdx = (id) => {
       const idx = items.findIndex(item => item.id === id);
-      return idx !== undefined 
+      return idx !== undefined
         ? idx : loKeys.indexOf(id);
     };
 
@@ -487,7 +487,7 @@ function main(context) {
       if ((activeProf !== profile) || (GAME_ID !== profile?.gameId)) {
         return Promise.resolve();
       }
-      const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+      const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
       let targetModType;
       try {
         targetModType = await getOfficialModType(context.api);

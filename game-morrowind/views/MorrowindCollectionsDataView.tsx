@@ -158,13 +158,13 @@ function mapStateToProps(state: types.IState, ownProps: IProps): IConnectedProps
   const profile = selectors.activeProfile(state) || undefined;
   let loadOrder: ILoadOrderEntry[] = [];
   if (!!profile?.gameId) {
-    loadOrder = util.getSafe(state, ['persistent', 'loadOrder', profile.id], empty);
+    loadOrder = state?.persistent?.loadOrder?.[profile.id] ?? [];
   }
 
   return {
     gameId: profile?.gameId,
     loadOrder,
-    mods: util.getSafe(state, ['persistent', 'mods', profile.gameId], {}),
+    mods: state?.persistent?.mods?.[profile.gameId] ?? {},
     profile,
   };
 }

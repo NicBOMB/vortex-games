@@ -30,10 +30,10 @@ function installContent(files) {
   const modFile = files.find(file => path.extname(file).toLowerCase() === MOD_FILE_EXT);
   const idx = modFile.indexOf(path.basename(modFile));
   const rootPath = path.dirname(modFile);
-  
+
   // Remove directories and anything that isn't in the rootPath.
-  const filtered = files.filter(file => 
-    ((file.indexOf(rootPath) !== -1) 
+  const filtered = files.filter(file =>
+    ((file.indexOf(rootPath) !== -1)
     && (!file.endsWith(path.sep))));
 
   const instructions = filtered.map(file => {
@@ -139,7 +139,7 @@ function loadOrderPrefix(api, mod) {
     return 'ZZZZ-';
   }
   const profile = selectors.profileById(state, gameProfile);
-  const loadOrder = util.getSafe(state, ['persistent', 'loadOrder', profile?.id], []);
+  const loadOrder = state?.persistent?.loadOrder?.[profile?.id] ?? [];
 
   const pos = loadOrder.indexOf(mod.id);
   if (pos === -1) {
@@ -154,7 +154,7 @@ function LoadOrderBase(props) {
     const idx = props.order.indexOf(input);
     return idx !== -1 ? idx : props.order.length;
   }
-  
+
   const filtered = Object.keys(props.mods).filter(mod => modIsEnabled(props, mod));
   const sorted = filtered.sort((lhs, rhs) => loValue(lhs) - loValue(rhs));
 
@@ -169,7 +169,7 @@ function LoadOrderBase(props) {
               backgroundColor: 'var(--brand-bg, black)',
               borderBottom: '2px solid var(--border-color, white)'
             },
-          }, 
+          },
           React.createElement('div', {
             style: {
               fontSize: '1.1em',
@@ -193,8 +193,8 @@ function LoadOrderBase(props) {
     React.createElement(MainPage.Body, {},
       React.createElement(BS.Panel, { id: 'codevein-loadorder-panel' },
         React.createElement(BS.Panel.Body, {},
-          React.createElement(FlexLayout, { type: 'row' }, 
-            React.createElement(FlexLayout.Flex, {}, 
+          React.createElement(FlexLayout, { type: 'row' },
+            React.createElement(FlexLayout.Flex, {},
               React.createElement(DraggableList, {
                 id: 'codevein-loadorder',
                 itemTypeId: 'codevein-loadorder-item',
@@ -219,12 +219,12 @@ function LoadOrderBase(props) {
                   padding: 'var(--half-gutter, 15px)',
                 }
               },
-                React.createElement('h2', {}, 
+                React.createElement('h2', {},
                   props.t('Changing your load order', { ns: I18N_NAMESPACE })),
-                React.createElement('p', {}, 
+                React.createElement('p', {},
                   props.t('Drag and drop the mods on the left to reorder them. Code Vein loads mods in alphabetic order so Vortex prefixes '
                   + 'the directory names with "AAA, AAB, AAC, ..." to ensure they load in the order you set here. ', { ns: I18N_NAMESPACE })),
-                  React.createElement('p', {}, 
+                  React.createElement('p', {},
                   props.t('Note: You can only manage mods installed with Vortex. Installing other mods manually may cause unexpected errors.', { ns: I18N_NAMESPACE })),
               ))
         )))));
@@ -234,9 +234,9 @@ function mapStateToProps(state) {
   const profile = selectors.activeProfile(state);
   return {
     profile,
-    modState: util.getSafe(profile, ['modState'], {}),
-    mods: util.getSafe(state, ['persistent', 'mods', profile.gameId], []),
-    order: util.getSafe(state, ['persistent', 'loadOrder', profile.id], []),
+    modState: profile?.modState ?? {},
+    mods: state?.persistent?.mods?.[profile.gameId] ?? [],
+    order: state?.persistent?.loadOrder?.[profile.id] ?? []
   };
 }
 

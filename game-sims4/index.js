@@ -182,7 +182,7 @@ function enableModding() {
   return parser.read(filePath)
     .then(ini => {
       // we could create the section but I don't know how the game would react
-      if (ini.data['options'] === undefined) { 
+      if (ini.data['options'] === undefined) {
         return;
       }
       ini.data['options']['scriptmodsenabled'] = 1;
@@ -302,9 +302,8 @@ function migrate200(api, oldVersion) {
   }
 
   const state = api.store.getState();
-  const activatorId = util.getSafe(state, ['settings', 'mods', 'activator', 'thesims4'], undefined);
-  const gameDiscovery =
-    util.getSafe(state, ['settings', 'gameMode', 'discovered', 'thesims4'], undefined);
+  const activatorId = state?.settings?.mods?.activator?.thesims4;
+  const gameDiscovery = state?.settings?.gameMode?.discovered?.thesims4;
 
   if ((gameDiscovery === undefined)
       || (gameDiscovery.path === undefined)

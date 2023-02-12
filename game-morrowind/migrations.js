@@ -12,7 +12,7 @@ async function migrate103(api, oldVersion) {
 
   const state = api.getState();
   const installPath = selectors.installPathForGame(state, MORROWIND_ID);
-  const mods = util.getSafe(state, ['persistent', 'mods', MORROWIND_ID], {});
+  const mods = state?.persistent?.mods?.[MORROWIND_ID] ?? {};
   if (installPath === undefined || Object.keys(mods).length === 0) {
     return Promise.resolve();
   }

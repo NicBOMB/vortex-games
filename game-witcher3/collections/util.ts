@@ -33,9 +33,11 @@ export function isModInCollection(collectionMod: types.IMod, mod: types.IMod) {
     util.testModReference(mod, rule.reference)) !== undefined;
 }
 
-export function genCollectionLoadOrder(loadOrder: { [modId: string]: ILoadOrderEntry },
-                                       mods: { [modId: string]: types.IMod },
-                                       collection?: types.IMod): ILoadOrder {
+export function genCollectionLoadOrder(
+  loadOrder: { [modId: string]: ILoadOrderEntry },
+  mods: { [modId: string]: types.IMod },
+  collection?: types.IMod
+): ILoadOrder {
   const sortedMods = Object.keys(loadOrder)
     .filter(id => {
       const isLocked = id.toLowerCase().includes(LOCKED_PREFIX);

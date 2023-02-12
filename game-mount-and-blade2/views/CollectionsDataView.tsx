@@ -1,5 +1,5 @@
-import * as _ from 'lodash';
-import * as React from 'react';
+import _ from 'lodash';
+import React from 'react';
 import { Button, ListGroup, ListGroupItem } from 'react-bootstrap';
 import { withTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
@@ -142,13 +142,13 @@ function mapStateToProps(state: types.IState, ownProps: IProps): IConnectedProps
   const profile = selectors.activeProfile(state) || undefined;
   let loadOrder: ILoadOrder = {};
   if (!!profile?.gameId) {
-    loadOrder = util.getSafe(state, ['persistent', 'loadOrder', profile.id], empty);
+    loadOrder = state?.persistent?.loadOrder?.[profile.id] ?? empty; // FIXME type discrepency
   }
 
   return {
     gameId: profile?.gameId,
     loadOrder,
-    mods: util.getSafe(state, ['persistent', 'mods', profile.gameId], {}),
+    mods: state?.persistent?.mods?.[profile.gameId] ?? {},
     profile,
   };
 }
@@ -158,5 +158,5 @@ function mapDispatchToProps(dispatch: any): IActionProps {
 }
 
 export default withTranslation(['common', NAMESPACE])(
-  connect(mapStateToProps, mapDispatchToProps)(
-    CollectionsDataView) as any) as React.ComponentClass<IExtendedInterfaceProps>;
+  connect(mapStateToProps, mapDispatchToProps)(CollectionsDataView)
+);

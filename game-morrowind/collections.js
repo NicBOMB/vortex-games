@@ -11,7 +11,7 @@ async function genCollectionsData(context,
   }
   try {
     const state = context.api.getState();
-    const mods = util.getSafe(state, ['persistent', 'mods', gameId], {});
+    const mods = state?.persistent?.mods?.[gameId] ?? {};
     const included = includedMods.reduce((accum, iter) => {
       if (mods[iter] !== undefined) {
         accum[iter] = mods[iter];

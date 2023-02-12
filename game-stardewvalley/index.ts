@@ -1,7 +1,7 @@
 import Bluebird from 'bluebird';
 import { IQuery } from 'modmeta-db';
 import React from 'react';
-import * as semver from 'semver';
+import semver from 'semver';
 import turbowalk from 'turbowalk';
 import { actions, fs, log, selectors, util, types } from 'vortex-api';
 import * as winapi from 'winapi-bindings';
@@ -138,11 +138,11 @@ class StardewValley implements types.IGame {
 
   /**
    * Get the default directory where mods for this game should be stored.
-   * 
+   *
    * If this returns a relative path then the path is treated as relative to the game installation
    * directory. Simply return a dot ( () => '.' ) if mods are installed directly into the game
    * directory.
-   */ 
+   */
   public queryModPath()
   {
     return 'Mods';
@@ -167,7 +167,7 @@ class StardewValley implements types.IGame {
     if (!smapiFound) {
       this.recommendSmapi();
     }
-    
+
     const state = this.context.api.getState();
     if (state.settings['SDV'].useRecommendations === undefined) {
       this.context.api.showDialog('question', 'Show Recommendations?', {
@@ -354,7 +354,7 @@ async function install(api,
   }));
 
   mods = mods.filter(x => x !== undefined);
-  
+
   if (mods.length === 0) {
     api.showErrorNotification(
       'The mod manifest is invalid and can\'t be read. You can try to install the mod anyway via right-click -> "Unpack (as-is)"',
@@ -470,14 +470,14 @@ async function installSMAPI(getDiscoveryPath, files, destinationPath) {
     log('error', 'failed to parse SDV dependencies', err);
   }
 
-  // file will be outdated after the walk operation so prepare a replacement. 
+  // file will be outdated after the walk operation so prepare a replacement.
   const updatedFiles = [];
 
   const szip = new SevenZip();
   // Unzip the files from the data archive. This doesn't seem to behave as described here: https://www.npmjs.com/package/node-7z#events
   await szip.extractFull(path.join(destinationPath, dataFile), destinationPath);
 
-  // Find any files that are not in the parent folder. 
+  // Find any files that are not in the parent folder.
   await util.walk(destinationPath, (iter, stats) => {
       const relPath = path.relative(destinationPath, iter);
       // Filter out files from the original install as they're no longer required.
@@ -490,7 +490,7 @@ async function installSMAPI(getDiscoveryPath, files, destinationPath) {
       return Bluebird.resolve();
   });
 
-  // Find the SMAPI exe file. 
+  // Find the SMAPI exe file.
   const smapiExe = updatedFiles.find(file => file.toLowerCase().endsWith(SMAPI_EXE.toLowerCase()));
   if (smapiExe === undefined) {
     return Promise.reject(new util.DataInvalid(`Failed to extract ${SMAPI_EXE} - download appears `
@@ -498,7 +498,7 @@ async function installSMAPI(getDiscoveryPath, files, destinationPath) {
   }
   const idx = smapiExe.indexOf(path.basename(smapiExe));
 
-  // Build the instructions for installation. 
+  // Build the instructions for installation.
   const instructions: types.IInstruction[] = updatedFiles.map(file => {
       return {
           type: 'copy',
@@ -647,7 +647,7 @@ function init(context: types.IExtensionContext) {
   let dependencyManager: DependencyManager;
   const getDiscoveryPath = () => {
     const state = context.api.store.getState();
-    const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+    const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
     if ((discovery === undefined) || (discovery.path === undefined)) {
       // should never happen and if it does it will cause errors elsewhere as well
       log('error', 'stardewvalley was not discovered');
@@ -689,7 +689,7 @@ function init(context: types.IExtensionContext) {
     const modFolderName = ((modsSegIdx !== -1) && (segments.length > modsSegIdx + 1))
       ? segments[modsSegIdx + 1] : undefined;
 
-    let bundledMods = util.getSafe(mod, ['attributes', 'smapiBundledMods'], []);
+    let bundledMods = mod?.attributes?.smapiBundledMods ?? [];
     bundledMods = bundledMods.length > 0 ? bundledMods : getBundledMods();
     if (segments.includes('content')) {
       // SMAPI is not supposed to overwrite the game's content directly.
@@ -803,7 +803,7 @@ function init(context: types.IExtensionContext) {
   context.registerAction('mod-icons', 999, 'changelog', {}, 'SMAPI Log',
     () => { onShowSMAPILog(context.api); },
     () => {
-      //Only show the SMAPI log button for SDV. 
+      //Only show the SMAPI log button for SDV.
       const state = context.api.store.getState();
       const gameMode = selectors.activeGameId(state);
       return (gameMode === GAME_ID);
@@ -870,9 +870,7 @@ function init(context: types.IExtensionContext) {
       await Bluebird.map(files, async entry => {
         // only act if we definitively know which mod owns the file
         if (entry.candidates.length === 1) {
-          const mod = util.getSafe(state.persistent.mods,
-                                   [GAME_ID, entry.candidates[0]],
-                                   undefined);
+          const mod = state.persistent.mods?.[GAME_ID]?.[entry.candidates[0]];
           if (!isModCandidateValid(mod, entry)) {
             return Promise.resolve();
           }
@@ -911,7 +909,7 @@ function init(context: types.IExtensionContext) {
       }
 
       const smapiMod = findSMAPIMod(context.api);
-      const primaryTool = util.getSafe(state, ['settings', 'interface', 'primaryTool', GAME_ID], undefined);
+      const primaryTool = state?.settings?.interface?.primaryTool?.[GAME_ID];
       if (smapiMod && primaryTool === undefined) {
         context.api.store.dispatch(actions.setPrimaryTool(GAME_ID, 'smapi'));
       }
@@ -927,7 +925,7 @@ function init(context: types.IExtensionContext) {
       }
 
       const smapiMod = findSMAPIMod(context.api);
-      const primaryTool = util.getSafe(state, ['settings', 'interface', 'primaryTool', GAME_ID], undefined);
+      const primaryTool = state?.settings?.interface?.primaryTool?.[GAME_ID];
       if (smapiMod && primaryTool === 'smapi') {
         context.api.store.dispatch(actions.setPrimaryTool(GAME_ID, undefined));
       }

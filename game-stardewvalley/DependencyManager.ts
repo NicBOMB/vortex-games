@@ -39,10 +39,10 @@ export default class DependencyManager {
     const staging = selectors.installPathForGame(state, GAME_ID);
     const profileId = selectors.lastActiveProfileForGame(state, GAME_ID);
     const profile = selectors.profileById(state, profileId);
-    const isActive = (modId: string) => util.getSafe(profile, ['modState', modId, 'enabled'], false);
-    const mods: { [modId: string]: types.IMod } = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+    const isActive = (modId: string) => profile?.modState?.[modId]?.enabled ?? false;
+    const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
     const manifests = await Object.values(mods).reduce(async (accumP, iter) => {
-      const accum = await accumP;      
+      const accum = await accumP;
       if (!isActive(iter.id)) {
         return Promise.resolve(accum);
       }

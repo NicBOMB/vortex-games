@@ -1,0 +1,15 @@
+{
+  "name": "vortex-games",
+  "version": "0.0.1",
+  "author": "Black Tree Gaming Ltd",
+  "description": "Vortex's bundled game extensions",
+  "license": "GPL-3.0",
+  "repository": "github:Nexus-Mods/vortex-games",
+  "scripts": {
+    "install": "tsc -p ."
+  },
+  "dependencies": {
+    "typescript": "^4.9.5",
+    "vortex-api": "workspace:*"
+  }
+}

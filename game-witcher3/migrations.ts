@@ -1,6 +1,6 @@
 import path from 'path';
 import semver from 'semver';
-import { actions, fs, selectors, types, util } from 'vortex-api';
+import { actions, fs, selectors, types } from 'vortex-api';
 
 import { GAME_ID } from './common';
 
@@ -13,9 +13,8 @@ export async function migrate148(context: types.IExtensionContext,
   const state = context.api.getState();
   const lastActiveProfile = selectors.lastActiveProfileForGame(state, GAME_ID);
   const profile = selectors.profileById(state, lastActiveProfile);
-  const mods: { [modId: string]: types.IMod } =
-    util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
-  const modState = util.getSafe(profile, ['modState'], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
+  const modState = profile?.modState ?? {};
   const isEnabled = (mod: types.IMod) => modState[mod.id]?.enabled === true;
   const limitPatchMod = Object.values(mods).find(mod =>
     (mod.type === 'w3modlimitpatcher') && isEnabled(mod));

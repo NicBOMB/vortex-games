@@ -15,8 +15,7 @@ export async function migrate100(api: types.IExtensionApi, oldVersion: string) {
   const activatorId = selectors.activatorForGame(state, GAME_ID);
   const activator = util.getActivator(activatorId);
 
-  const discovery =
-    util.getSafe(state, ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
 
   if ((discovery === undefined)
       || (discovery.path === undefined)

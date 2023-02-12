@@ -46,7 +46,7 @@ function getModsFolder() {
     return _GAME_MODS_FOLDER;
   }
   const state = _API.store.getState();
-  const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
   if (discovery?.path === undefined) {
     throw new util.ProcessCanceled('Game is not discovered!');
   }
@@ -349,7 +349,7 @@ function installNoProject(files, destinationPath) {
 function getExecutable(discoveryPath) {
   const getDiscoveryPath = () => {
     const state = _API.store.getState();
-    const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+    const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
     return (discovery !== undefined)
       ? discovery.path
       : undefined;

@@ -9,7 +9,7 @@ export function toBlue<T>(func: (...args: any[]) => Promise<T>): (...args: any[]
 }
 
 export function getDiscoveryPath(state) {
-  const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
   if ((discovery === undefined) || (discovery.path === undefined)) {
     log('debug', 'untitledgoosegame was not discovered');
     return undefined;

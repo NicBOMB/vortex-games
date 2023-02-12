@@ -136,7 +136,7 @@ function main(context) {
   const getDiscoveryPath = (api) => {
     const store = api.store;
     const state = store.getState();
-    const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+    const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
     if ((discovery === undefined) || (discovery.path === undefined)) {
       // should never happen.
       log('error', 'monster hunter: world was not discovered');
@@ -239,7 +239,7 @@ function installContent(files,
       destination: file.substr(idx),
     };
   })
-  
+
   return Promise.resolve({instructions});
 }
 

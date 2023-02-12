@@ -126,7 +126,7 @@ function toLOPrefix(context: types.IExtensionContext, mod: types.IMod): string {
   }
 
   // Retrieve the load order as stored in Vortex's application state.
-  const loadOrder = util.getSafe(props.state, ['persistent', 'loadOrder', props.profile.id], []);
+  const loadOrder = props.state?.persistent?.loadOrder?.[props.profile.id] ?? [];
 
   // Find the mod entry in the load order state and insert the prefix in front
   //  of the mod's name/id/whatever

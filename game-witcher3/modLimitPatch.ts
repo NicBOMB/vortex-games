@@ -33,12 +33,11 @@ export class ModLimitPatcher {
     await this.queryPatch();
     const stagingPath = selectors.installPathForGame(state, GAME_ID);
     const modName = 'Mod Limit Patcher';
-    let mod: types.IMod = util.getSafe(state, ['persistent', 'mods', GAME_ID, modName], undefined);
+    let mod = state?.persistent?.mods?.[GAME_ID]?.[modName];
     if (mod === undefined) {
       try {
         await this.createModLimitPatchMod(modName);
-        mod = util.getSafe(this.mApi.getState(),
-          ['persistent', 'mods', GAME_ID, modName], undefined);
+        mod = this.mApi.getState()?.persistent?.mods?.[GAME_ID]?.[modName];
       } catch (err) {
         return Promise.reject(err);
       }

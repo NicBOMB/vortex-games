@@ -36,7 +36,7 @@ export async function refreshCache(context: types.IExtensionContext,
 
 async function getDeployedSubModPaths(context: types.IExtensionContext) {
   const state = context.api.store.getState();
-  const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
   if (discovery?.path === undefined) {
     return Promise.reject(new util.ProcessCanceled('game discovery is incomplete'));
   }
@@ -209,9 +209,8 @@ async function getManagedIds(context: types.IExtensionContext) {
     return Promise.resolve([]);
   }
 
-  const modState = util.getSafe(state,
-    ['persistent', 'profiles', activeProfile.id, 'modState'], {});
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const modState = state?.persistent?.profiles?.[activeProfile.id]?.modState ?? {};
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   const enabledMods = Object.keys(modState)
     .filter(key => !!mods[key] && modState[key].enabled)
     .map(key => mods[key]);
@@ -281,8 +280,8 @@ async function getManagedIds(context: types.IExtensionContext) {
 }
 
 export function isInvalid(subModId: string) {
-  const cyclicErrors = util.getSafe(CACHE[subModId], ['invalid', 'cyclic'], []);
-  const missingDeps = util.getSafe(CACHE[subModId], ['invalid', 'missing'], []);
+  const cyclicErrors = CACHE[subModId]?.invalid?.cyclic ?? [];
+  const missingDeps = CACHE[subModId]?.invalid?.missing ?? [];
   return ((cyclicErrors.length > 0) || (missingDeps.length > 0));
 }
 
@@ -291,9 +290,9 @@ export function getValidationInfo(vortexId: string) {
   //  this is how we store this information in the load order object.
   //  Reason why we need to search the cache by vortexId rather than subModId.
   const subModId = Object.keys(CACHE).find(key => CACHE[key].vortexId === vortexId);
-  const cyclic = util.getSafe(CACHE[subModId], ['invalid', 'cyclic'], []);
-  const missing = util.getSafe(CACHE[subModId], ['invalid', 'missing'], []);
-  const incompatible = util.getSafe(CACHE[subModId], ['invalid', 'incompatibleDeps'], []);
+  const cyclic = CACHE[subModId]?.invalid?.cyclic ?? [];
+  const missing = CACHE[subModId]?.invalid?.missing ?? [];
+  const incompatible = CACHE[subModId]?.invalid?.incompatibleDeps ?? [];
   return {
     cyclic,
     missing,

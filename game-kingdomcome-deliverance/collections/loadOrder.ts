@@ -4,22 +4,22 @@ import { transformId } from '../util';
 
 import { IKCDCollectionsData } from './types';
 
-export async function exportLoadOrder(state: types.IState,
-                                      modIds: string[])
-                                      : Promise<string[]> {
+export async function exportLoadOrder(
+  state: types.IState,
+  modIds: string[]
+): Promise<types.ILoadOrderEntry[]> {
   const profileId = selectors.lastActiveProfileForGame(state, GAME_ID);
   if (profileId === undefined) {
     return Promise.reject(new util.ProcessCanceled('Invalid profile id'));
   }
 
-  const loadOrder: string[] = util.getSafe(state,
-    ['persistent', 'loadOrder', profileId], undefined);
+  const loadOrder = state?.persistent?.loadOrder?.[profileId];
   if (loadOrder === undefined) {
     return Promise.resolve(undefined);
   }
 
-  const filteredLO: string[] = loadOrder.filter(lo =>
-    modIds.find(id => transformId(id) === lo) !== undefined);
+  const filteredLO = loadOrder.filter((lo) => //FIXME 'LoadOrder' is not {[modID: string]: 'ILoadOrderEntry[]'}
+    modIds.find(id => transformId(id) === lo as any) !== undefined);
   return Promise.resolve(filteredLO);
 }
 

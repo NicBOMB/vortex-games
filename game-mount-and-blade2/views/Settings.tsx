@@ -2,7 +2,7 @@ import I18next from 'i18next';
 import * as React from 'react';
 import { withTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
-import { More, Toggle, selectors, types, util } from 'vortex-api';
+import { More, Toggle, selectors, types } from 'vortex-api';
 
 interface IBaseProps {
   t: typeof I18next.t;
@@ -42,16 +42,14 @@ function Settings(props: IProps) {
   );
 }
 
-function mapStateToProps(state: any): IConnectedProps {
+function mapStateToProps(state: types.IState): IConnectedProps {
   const profileId: string = selectors.activeProfile(state)?.id;
   return {
     profileId,
-    autoSortOnDeploy: util.getSafe(state,
-      ['settings', 'mountandblade2', 'sortOnDeploy', profileId], true),
+    autoSortOnDeploy: (state?.settings?.['mountandblade2']?.sortOnDeploy?.[profileId] ?? true),
   };
 }
 
-export default 
-  withTranslation(['common', 'mnb2-settings'])(
-    connect(mapStateToProps)(
-      Settings) as any) as React.ComponentClass<{}>;
+export default withTranslation(['common', 'mnb2-settings'])(
+  connect(mapStateToProps)(Settings)
+);

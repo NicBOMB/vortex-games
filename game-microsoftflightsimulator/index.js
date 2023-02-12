@@ -393,7 +393,7 @@ async function setup() {
   // to know which plane it's intended for.
   // To help, we create a map of just the file names mapped to all possible subdirectories they
   // belong into. If the files in a mod are supposed to replace an existing file but lacking
-  // the directory structure we don't know which, we can use that to determine 
+  // the directory structure we don't know which, we can use that to determine
 
   let officialItems;
 
@@ -661,7 +661,7 @@ function loadOrderPrefix(api, mod) {
     return 'ZZZ-';
   }
   const profile = selectors.profileById(state, gameProfile);
-  const loadOrder = util.getSafe(state, ['persistent', 'loadOrder', profile?.id], {});
+  const loadOrder = state?.persistent?.loadOrder?.[profile?.id] ?? {};
   const pos = loadOrder[mod.id]?.pos ?? -1;
   if (pos === -1) {
     return 'ZZZ-';

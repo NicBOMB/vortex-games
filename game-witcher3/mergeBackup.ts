@@ -42,15 +42,14 @@ function genBaseProps(context: types.IExtensionContext,
     return undefined;
   }
 
-  const localMergedScripts: boolean = (force) ? true : util.getSafe(state,
-    ['persistent', 'profiles', profileId, 'features', 'local_merges'], false);
+  const localMergedScripts: boolean = (force) ? true :
+    state?.persistent?.profiles?.[profileId]?.features?.local_merges ?? false;
   if (!localMergedScripts) {
     return undefined;
   }
 
-  const discovery: types.IDiscoveryResult = util.getSafe(state,
-    ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
-  const scriptMergerTool: types.IDiscoveredTool = discovery?.tools?.[SCRIPT_MERGER_ID];
+  const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
+  const scriptMergerTool = discovery?.tools?.[SCRIPT_MERGER_ID];
   if (!scriptMergerTool?.path) {
     // Regardless of the user's profile settings - there's no point in backing up
     //  the merges if we don't know where the script merger is!
@@ -256,8 +255,8 @@ export async function queryScriptMerges(context: types.IExtensionContext,
                                         includedModIds: string[],
                                         collection: types.IMod) {
   const state = context.api.getState();
-  const mods: { [modId: string]: types.IMod } = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
-  const modTypes: { [typeId: string]: string } = selectors.modPathsForGame(state, GAME_ID);
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
+  const modTypes = selectors.modPathsForGame(state, GAME_ID);
   const deployment: IDeployment = await getDeployment(context.api, includedModIds);
   const deployedNames: string[] = Object.keys(modTypes).reduce((accum, typeId) => {
     const modPath = modTypes[typeId];
@@ -396,7 +395,7 @@ export async function importScriptMerges(context: types.IExtensionContext,
 
 export async function makeOnContextImport(context: types.IExtensionContext, collectionId: string) {
   const state = context.api.getState();
-  const mods: { [modId: string]: types.IMod } = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   const collectionMod = mods[collectionId];
   if (collectionMod?.installationPath === undefined) {
     log('error', 'collection mod is missing', collectionId);
@@ -410,8 +409,7 @@ export async function makeOnContextImport(context: types.IExtensionContext, coll
     const { scriptMergedData } = collection.mergedData;
     if (scriptMergedData !== undefined) {
       // Make sure we have the script merger installed straight away!
-      const scriptMergerTool = util.getSafe(state,
-        ['settings', 'gameMode', 'discovered', GAME_ID, 'tools', SCRIPT_MERGER_ID], undefined);
+      const scriptMergerTool = state?.settings?.gameMode?.discovered?.[GAME_ID]?.tools?.[SCRIPT_MERGER_ID];
       if (scriptMergerTool === undefined) {
         await downloadScriptMerger(context);
       }

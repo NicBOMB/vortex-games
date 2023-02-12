@@ -6,13 +6,13 @@ import { GAME_ID, I18N_NAMESPACE, loadOrderFilePath, modsRelPath } from './commo
 import { serialize } from './loadOrder';
 import { LoadOrder } from './types';
 
-export function migrate020(api, oldVersion): Promise<void> {
+export function migrate020(api: types.IExtensionApi, oldVersion): Promise<void> {
   if (semver.gte(oldVersion, '0.2.0')) {
     return Promise.resolve();
   }
 
   const state = api.store.getState();
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   const hasMods = Object.keys(mods).length > 0;
 
   if (!hasMods) {
@@ -60,8 +60,7 @@ export async function migrate100(context, oldVersion): Promise<void> {
   }
 
   const state = context.api.store.getState();
-  const discoveryPath = util.getSafe(state,
-    ['settings', 'gameMode', 'discovered', GAME_ID, 'path'], undefined);
+  const discoveryPath = state?.settings?.gameMode?.discovered?.[GAME_ID]?.path;
 
   const activatorId = selectors.activatorForGame(state, GAME_ID);
   const activator = util.getActivator(activatorId);
@@ -69,18 +68,17 @@ export async function migrate100(context, oldVersion): Promise<void> {
     return Promise.resolve();
   }
 
-  const mods: { [modId: string]: types.IMod } = util.getSafe(state,
-    ['persistent', 'mods', GAME_ID], {});
+  const mods: { [modId: string]: types.IMod } = state?.persistent?.mods?.[GAME_ID] ?? {};
 
   if (Object.keys(mods).length === 0) {
     // No mods - no problem.
     return Promise.resolve();
   }
 
-  const profiles = util.getSafe(state, ['persistent', 'profiles'], {});
+  const profiles = state?.persistent?.profiles ?? {};
   const loProfiles = Object.keys(profiles).filter(id => profiles[id]?.gameId === GAME_ID);
-  const loMap: { [profId: string]: LoadOrder } = loProfiles.reduce((accum, iter) => {
-    const current = util.getSafe(state, ['persistent', 'loadOrder', iter], []);
+  const loMap = loProfiles.reduce((accum: { [profId: string]: LoadOrder }, iter) => {
+    const current = state?.persistent?.loadOrder?.[iter] ?? [];
     const newLO: LoadOrder = current.map(entry => {
       return {
         enabled: true,
@@ -112,24 +110,22 @@ export async function migrate1011(context, oldVersion): Promise<void> {
   }
 
   const state = context.api.store.getState();
-  const discoveryPath = util.getSafe(state,
-    ['settings', 'gameMode', 'discovered', GAME_ID, 'path'], undefined);
+  const discoveryPath = state?.settings?.gameMode?.discovered?.[GAME_ID]?.path;
   if (!discoveryPath) {
     return Promise.resolve();
   }
 
-  const mods: { [modId: string]: types.IMod } = util.getSafe(state,
-    ['persistent', 'mods', GAME_ID], {});
+  const mods: { [modId: string]: types.IMod } = state?.persistent?.mods?.[GAME_ID];
 
   if (Object.keys(mods).length === 0) {
     // No mods - no problem.
     return Promise.resolve();
   }
 
-  const profiles = util.getSafe(state, ['persistent', 'profiles'], {});
+  const profiles = state?.persistent?.profiles ?? {};
   const loProfiles = Object.keys(profiles).filter(id => profiles[id]?.gameId === GAME_ID);
-  const loMap: { [profId: string]: LoadOrder } = loProfiles.reduce((accum, iter) => {
-    const lo: LoadOrder = util.getSafe(state, ['persistent', 'loadOrder', iter], []);
+  const loMap = loProfiles.reduce((accum: { [profId: string]: LoadOrder }, iter) => {
+    const lo: LoadOrder = state?.persistent?.loadOrder?.[iter] ?? [];
     accum[iter] = lo;
     return accum;
   }, {});

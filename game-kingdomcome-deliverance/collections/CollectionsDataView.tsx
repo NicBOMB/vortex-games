@@ -22,7 +22,7 @@ interface IBaseState {
 interface IConnectedProps {
   gameId: string;
   mods: { [modId: string]: types.IMod };
-  loadOrder: string[];
+  loadOrder: types.LoadOrder;
   profile: types.IProfile;
 }
 
@@ -34,22 +34,22 @@ type IComponentState = IBaseState;
 
 class CollectionsDataView extends ComponentEx<IProps, IComponentState> {
   public static getDerivedStateFromProps(newProps: IProps, state: IComponentState) {
-    const { loadOrder, mods, collection } = newProps;
-    const sortedMods = genCollectionLoadOrder(loadOrder, mods, collection);
+    const { loadOrder, mods, collection } = newProps; // FIXME: as unknown as string[]
+    const sortedMods = genCollectionLoadOrder(loadOrder as unknown as string[], mods, collection);
     return (sortedMods !== state.sortedMods) ? { sortedMods } : null;
   }
 
   constructor(props: IProps) {
     super(props);
     const { loadOrder, mods, collection } = props;
-    this.initState({
-      sortedMods: genCollectionLoadOrder(loadOrder, mods, collection) || [],
+    this.initState({ // FIXME: as unknown as string[]
+      sortedMods: genCollectionLoadOrder(loadOrder as unknown as string[], mods, collection) || [],
     });
   }
 
   public componentDidMount() {
-    const { loadOrder, mods, collection } = this.props;
-    this.nextState.sortedMods = genCollectionLoadOrder(loadOrder, mods, collection);
+    const { loadOrder, mods, collection } = this.props; // FIXME: as unknown as string[]
+    this.nextState.sortedMods = genCollectionLoadOrder(loadOrder as unknown as string[], mods, collection);
   }
 
   public render(): JSX.Element {
@@ -124,15 +124,10 @@ class CollectionsDataView extends ComponentEx<IProps, IComponentState> {
 
 function mapStateToProps(state: types.IState, ownProps: IProps): IConnectedProps {
   const profile = selectors.activeProfile(state) || undefined;
-  let loadOrder: string[] = [];
-  if (!!profile?.gameId) {
-    loadOrder = util.getSafe(state, ['persistent', 'loadOrder', profile.id], []);
-  }
-
   return {
     gameId: profile?.gameId,
-    loadOrder,
-    mods: util.getSafe(state, ['persistent', 'mods', profile.gameId], {}),
+    loadOrder: !!profile?.gameId ? state?.persistent?.loadOrder?.[profile.id] ?? [] : [],
+    mods: state?.persistent?.mods?.[profile.gameId] ?? {},
     profile,
   };
 }

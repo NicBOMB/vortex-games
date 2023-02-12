@@ -67,12 +67,12 @@ async function downloadConsent(context) {
   const api = context.api;
   return new Promise((resolve, reject) => {
     api.showDialog('info', 'Witcher 3 Script Merger', {
-      bbcode: api.translate('Many Witcher 3 mods add or edit game scripts. When several mods ' 
-        + 'editing the same script are installed, these mods need to be merged using a tool ' 
+      bbcode: api.translate('Many Witcher 3 mods add or edit game scripts. When several mods '
+        + 'editing the same script are installed, these mods need to be merged using a tool '
         + 'called Witcher 3 Script Merger. Vortex can attempt to download and configure the merger '
         + 'for you automatically - before doing so - please ensure your account has full read/write permissions '
         + 'to your game\'s directory. The script merger can be installed at a later point if you wish. [br][/br][br][/br]'
-        + '[url=https://wiki.nexusmods.com/index.php/Tool_Setup:_Witcher_3_Script_Merger]find out more about the script merger.[/url][br][/br][br][/br]' 
+        + '[url=https://wiki.nexusmods.com/index.php/Tool_Setup:_Witcher_3_Script_Merger]find out more about the script merger.[/url][br][/br][br][/br]'
         + 'Note: While script merging works well with the vast majority of mods, there is no guarantee for a satisfying outcome in every single case.', { ns: 'game-witcher3' }),
     }, [
       { label: 'Cancel', action: () => reject(new util.UserCanceled()) },
@@ -80,10 +80,10 @@ async function downloadConsent(context) {
     ]);
   });
 }
-
+/** @param context {import('vortex-api').types.IExtensionContext} */
 async function getMergerVersion(context) {
   const state = context.api.store.getState();
-  const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', 'witcher3'], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.['witcher3'];
   if (discovery?.path === undefined) {
     return Promise.reject(new util.SetupError('Witcher3 is not discovered'));
   }
@@ -95,8 +95,8 @@ async function getMergerVersion(context) {
   if (!!merger?.path) {
     return fs.statAsync(merger.path)
       .then(() => {
-        if (merger?.mergerVersion !== undefined) {
-          return Promise.resolve(merger.mergerVersion);
+        if (merger?.['mergerVersion'] !== undefined) {
+          return Promise.resolve(merger?.['mergerVersion']);
         }
         const execVersion = getVersion(merger.path);
         if (!!execVersion) {
@@ -170,7 +170,7 @@ async function onDownloadComplete(context, archivePath, mostRecentVersion) {
 
 async function getScriptMergerDir(context, create = false) {
   const state = context.api.getState();
-  const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', 'witcher3'], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.['witcher3'];
   if (discovery?.path === undefined) {
     return undefined;
   }
@@ -192,7 +192,7 @@ async function getScriptMergerDir(context, create = false) {
 
 async function downloadScriptMerger(context) {
   const state = context.api.store.getState();
-  const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', 'witcher3'], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.['witcher3'];
   if (discovery?.path === undefined) {
     return Promise.reject(new util.SetupError('Witcher3 is not discovered'));
   }
@@ -302,7 +302,7 @@ async function downloadScriptMerger(context) {
                     type: 'error',
                     message: context.api.translate('Please install Script Merger manually', { ns: 'game-witcher3' }),
                     actions: [
-                      { 
+                      {
                         title: 'Install Manually',
                         action: () => util.opn('https://www.nexusmods.com/witcher3/mods/484')
                               .catch(err => null)
@@ -396,7 +396,7 @@ async function extractScriptMerger(context, archivePath) {
 
 async function setUpMerger(context, mergerVersion, newPath) {
   const state = context.api.store.getState();
-  const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', 'witcher3'], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.['witcher3'];
   const currentDetails = discovery?.tools?.W3ScriptMerger;
 
   const newToolDetails = (!!currentDetails)

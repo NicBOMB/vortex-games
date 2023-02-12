@@ -1,4 +1,4 @@
-import { selectors, types, util } from 'vortex-api';
+import { selectors, types } from 'vortex-api';
 
 import { GAME_ID, SCRIPT_MERGER_ID } from '../common';
 
@@ -13,20 +13,20 @@ import { downloadScriptMerger } from '../scriptmerger';
 
 import { CollectionParseError, hex2Buffer } from './util';
 
-export async function genCollectionsData(context: types.IExtensionContext,
-                                         gameId: string,
-                                         includedMods: string[],
-                                         collection: types.IMod) {
+export async function genCollectionsData(
+  context: types.IExtensionContext,
+  gameId: string,
+  includedMods: string[],
+  collection: types.IMod
+){
   const api = context.api;
   const state = api.getState();
   const profile = selectors.activeProfile(state);
-  const mods: { [modId: string]: types.IMod } = util.getSafe(state,
-    ['persistent', 'mods', gameId], {});
+  const mods = state?.persistent?.mods?.[gameId] ?? {};
   try {
     const loadOrder: ILoadOrder = await exportLoadOrder(api.getState(), includedMods, mods);
     const menuModData = await exportMenuMod(api, profile, includedMods);
-    const scriptMergerTool = util.getSafe(state,
-      ['settings', 'gameMode', 'discovered', GAME_ID, 'tools', SCRIPT_MERGER_ID], undefined);
+    const scriptMergerTool = state?.settings?.gameMode?.discovered?.[GAME_ID]?.tools?.[SCRIPT_MERGER_ID];
     let scriptMergesData;
     if (scriptMergerTool !== undefined) {
       scriptMergesData = await exportScriptMerges(context, profile.id, includedMods, collection);
@@ -70,8 +70,7 @@ export async function parseCollectionsData(context: types.IExtensionContext,
 
     if (scriptMergedData !== undefined) {
       // Make sure we have the script merger installed straight away!
-      const scriptMergerTool = util.getSafe(state,
-        ['settings', 'gameMode', 'discovered', GAME_ID, 'tools', SCRIPT_MERGER_ID], undefined);
+      const scriptMergerTool = state?.settings?.gameMode?.discovered?.[GAME_ID]?.tools?.[SCRIPT_MERGER_ID];
       if (scriptMergerTool === undefined) {
         await downloadScriptMerger(context);
       }

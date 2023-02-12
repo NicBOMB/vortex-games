@@ -23,13 +23,12 @@ export function genProps(context: types.IExtensionContext, profileId?: string): 
     return undefined;
   }
 
-  const discovery: types.IDiscoveryResult = util.getSafe(state,
-    ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
   if (discovery?.path === undefined) {
     return undefined;
   }
 
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   return { api, state, profile, mods, discovery };
 }
 

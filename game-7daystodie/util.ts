@@ -24,13 +24,12 @@ export function genProps(context: types.IExtensionContext, profileId?: string): 
     return undefined;
   }
 
-  const discovery: types.IDiscoveryResult = util.getSafe(state,
-    ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+  const discovery: types.IDiscoveryResult = state?.settings?.gameMode?.discovered?.[GAME_ID];
   if (discovery?.path === undefined) {
     return undefined;
   }
 
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   return { api, state, profile, mods, discovery };
 }
 
@@ -64,7 +63,7 @@ export function getPrefixOffset(api: types.IExtensionApi): number {
     return;
   }
 
-  return util.getSafe(state, ['settings', '7daystodie', 'prefixOffset', profileId], 0);
+  return state?.settings?.['7daystodie']?.prefixOffset?.[profileId] ?? 0;
 }
 
 export function reversePrefix(input: string): number {

@@ -3,14 +3,16 @@ import { IKCDCollectionsData } from './types';
 
 import { exportLoadOrder, importLoadOrder } from './loadOrder';
 
-export async function genCollectionsData(context: types.IExtensionContext,
-                                         gameId: string,
-                                         includedMods: string[]) {
+export async function genCollectionsData(
+  context: types.IExtensionContext,
+  gameId: string,
+  includedMods: string[]
+){
   const api = context.api;
   try {
-    const loadOrder: string[] = await exportLoadOrder(api.getState(), includedMods);
+    const loadOrder = await exportLoadOrder(api.getState(), includedMods);
     const collectionData: IKCDCollectionsData = {
-      loadOrder,
+      loadOrder: loadOrder as any, //FIXME 'LoadOrder' is not {[modID: string]: 'ILoadOrderEntry[]'}
     };
     return Promise.resolve(collectionData);
   } catch (err) {
@@ -18,9 +20,11 @@ export async function genCollectionsData(context: types.IExtensionContext,
   }
 }
 
-export async function parseCollectionsData(context: types.IExtensionContext,
-                                           gameId: string,
-                                           collection: IKCDCollectionsData) {
+export async function parseCollectionsData(
+  context: types.IExtensionContext,
+  gameId: string,
+  collection: IKCDCollectionsData
+){
   const api = context.api;
   const state = api.getState();
   const profileId = selectors.lastActiveProfileForGame(state, gameId);

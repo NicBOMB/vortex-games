@@ -1,4 +1,4 @@
-import { selectors, types, util } from 'vortex-api';
+import { selectors, types } from 'vortex-api';
 
 import { GAME_ID } from '../common';
 
@@ -15,8 +15,7 @@ export async function genCollectionsData(context: types.IExtensionContext,
   const api = context.api;
   const state = api.getState();
   const profile = selectors.activeProfile(state);
-  const mods: { [modId: string]: types.IMod } = util.getSafe(state,
-    ['persistent', 'mods', gameId], {});
+  const mods = state?.persistent?.mods?.[gameId] ?? {};
   try {
     const loadOrder: ILoadOrder = await exportLoadOrder(api.getState(), includedMods, mods);
     const collectionData: ICollectionsData = { loadOrder };

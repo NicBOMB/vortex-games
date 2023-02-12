@@ -38,17 +38,15 @@ export function genProps(api: types.IExtensionApi, profileId?: string): IProps {
     return undefined;
   }
 
-  const discovery: types.IDiscoveryResult = util.getSafe(state,
-    ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
   if (discovery?.path === undefined) {
     return undefined;
   }
 
-  const mods: { [modId: string]: types.IMod } =
-    util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
 
   const enabledMods = Object.keys(mods)
-    .filter(id => util.getSafe(profile, ['modState', id, 'enabled'], false))
+    .filter(id => profile?.modState?.[id]?.enabled ?? false)
     .reduce((accum, id) => {
       accum[id] = mods[id];
       return accum;

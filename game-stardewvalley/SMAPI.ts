@@ -7,10 +7,10 @@ export function findSMAPIMod(api: types.IExtensionApi): types.IMod {
   const state = api.getState();
   const profileId = selectors.lastActiveProfileForGame(state, GAME_ID);
   const profile = selectors.profileById(state, profileId);
-  const isActive = (modId: string) => util.getSafe(profile, ['modState', modId, 'enabled'], false);
+  const isActive = (modId: string) => profile?.modState?.[modId]?.enabled ?? false;
   const isSMAPI = (mod: types.IMod) =>
     mod.type === 'SMAPI' && mod.attributes?.modId === 2400;
-  const mods: { [modId: string]: types.IMod } = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   const SMAPIMods: types.IMod[] = Object.values(mods).filter((mod: types.IMod) =>
     isSMAPI(mod) && isActive(mod.id));
 

@@ -23,7 +23,7 @@ async function getJSONElement(filePath, element) {
     .then(data => {
       try {
         const modData = rjson.parse(util.deBOM(data));
-        const elementData = util.getSafe(modData, [element], undefined);
+        const elementData = modData?.[element];
         return elementData !== undefined
           ? Promise.resolve(elementData)
           : Promise.reject(new util.DataInvalid(`"${element}" JSON element is missing`));
@@ -180,7 +180,7 @@ async function checkModGameVersion(destination, minModVersion, modFile) {
 function getDiscoveryPath(api) {
   const store = api.store;
   const state = store.getState();
-  const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
   if ((discovery === undefined) || (discovery.path === undefined)) {
     // should never happen and if it does it will cause errors elsewhere as well
     log('debug', 'bladeandsorcery was not discovered');

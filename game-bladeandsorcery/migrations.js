@@ -25,7 +25,7 @@ async function migrate0212(api, oldVersion) {
 
   const state = api.getState();
   const discovery = selectors.discoveryByGame(state, GAME_ID);
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   const modKeys = Object.keys(mods).filter(id => mods[id].modType === 'bas-legacy-modtype');
   if (discovery?.path === undefined || modKeys.length === 0) {
     return Promise.resolve();
@@ -60,17 +60,15 @@ function migrate020(api, oldVersion) {
   }
 
   const state = api.getState();
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   const modKeys = Object.keys(mods);
   if (modKeys.length === 0) {
     return Promise.resolve();
   }
 
-  const activatorId = util.getSafe(state,
-    ['settings', 'mods', 'activator', GAME_ID], undefined);
+  const activatorId = state?.settings?.mods?.activator?.[GAME_ID];
 
-  const gameDiscovery = util.getSafe(state,
-    ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+  const gameDiscovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
 
   if ((gameDiscovery?.path === undefined)
       || (activatorId === undefined)) {
@@ -144,7 +142,7 @@ function migrateMod020(api, mod) {
   }).then(() => {
     const manifestFiles = allEntries.filter(entry =>
       path.basename(entry).toLowerCase() === MOD_MANIFEST);
-    
+
     if (manifestFiles.length !== 1 || path.dirname(manifestFiles[0]) !== modPath) {
       // mods with multiple manifests were not compatible with the previous
       //  LO system, so it's probably not installed correctly anyway.

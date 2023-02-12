@@ -10,21 +10,21 @@ export async function testModLimitBreach(
     limitPatcher: ModLimitPatcher): Promise<types.ITestResult> {
   const t = api.translate;
   const state: types.IState = api.store.getState();
-  const isSuppressed = util.getSafe(state, getSuppressModLimitBranch(), false);
+  const isSuppressed = state?.settings?.['witcher3']?.suppressModLimitPatch ?? false;
   const profile: types.IProfile = selectors.activeProfile(state);
   if (profile?.gameId !== GAME_ID || isSuppressed) {
     return Promise.resolve(undefined);
   }
 
-  const mods: { [modId: string]: types.IMod } = state.persistent.mods[GAME_ID] ?? {};
+  const mods = state.persistent.mods[GAME_ID] ?? {};
   const limitPatch = Object.values(mods).find(mod => mod.type === 'w3modlimitpatcher');
   if (limitPatch) {
     // A limit patch already exists.
     return Promise.resolve(undefined);
   }
 
-  const enabled = Object.keys(mods).filter(id =>
-    util.getSafe(profile, ['modState', id, 'enabled'], false));
+  const enabled = Object.keys(mods).filter((id) =>
+    profile?.modState?.[id]?.enabled ?? false);
 
   let res: types.ITestResult;
 

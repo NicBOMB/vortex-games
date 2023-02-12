@@ -1,4 +1,4 @@
-import { actions, selectors, types, util } from 'vortex-api';
+import { actions, selectors, types } from 'vortex-api';
 import { GAME_ID } from '../common';
 import { ILoadOrder, ILoadOrderEntry } from '../types';
 import { ICollectionsData } from './types';
@@ -15,8 +15,7 @@ export async function exportLoadOrder(state: types.IState,
     return Promise.reject(new CollectionGenerateError('Invalid profile id'));
   }
 
-  const loadOrder: ILoadOrder = util.getSafe(state,
-    ['persistent', 'loadOrder', profileId], undefined);
+  const loadOrder = state?.persistent?.loadOrder?.[profileId];
   if (loadOrder === undefined) {
     // This is theoretically "fine" - the user may have simply
     //  downloaded the mods and immediately created the collection
@@ -32,8 +31,8 @@ export async function exportLoadOrder(state: types.IState,
       accum[iter] = mods[iter];
     }
     return accum;
-  }, {});
-  const filteredLO: ILoadOrder = genCollectionLoadOrder(loadOrder, includedMods);
+  }, {}); //FIXME 'LoadOrder' is not {[modID: string]: 'ILoadOrderEntry[]'}
+  const filteredLO: ILoadOrder = genCollectionLoadOrder(loadOrder as any, includedMods);
   return Promise.resolve(filteredLO);
 }
 

@@ -4,9 +4,11 @@ import { GAME_ID } from './common';
 import { ILoadOrderEntry, IProps, ISerializableData, LoadOrder } from './types';
 import { ensureLOFile, genProps, makePrefix } from './util';
 
-export async function serialize(context: types.IExtensionContext,
-                                loadOrder: LoadOrder,
-                                profileId?: string): Promise<void> {
+export async function serialize(
+  context: types.IExtensionContext,
+  loadOrder: LoadOrder,
+  profileId?: string
+): Promise<void> {
   const props: IProps = genProps(context);
   if (props === undefined) {
     return Promise.reject(new util.ProcessCanceled('invalid props'));
@@ -46,13 +48,13 @@ export async function deserialize(context: types.IExtensionContext): Promise<Loa
   // The deserialization function should be used to filter and insert wanted data into Vortex's
   //  loadOrder application state, once that's done, Vortex will trigger a serialization event
   //  which will ensure that the data is written to the LO file.
-  const currentModsState = util.getSafe(props.profile, ['modState'], {});
+  const currentModsState = props.profile?.modState ?? {};
 
   // we only want to insert enabled mods.
-  const enabledModIds = Object.keys(currentModsState)
-    .filter(modId => util.getSafe(currentModsState, [modId, 'enabled'], false));
-  const mods: { [modId: string]: types.IMod } = util.getSafe(props.state,
-    ['persistent', 'mods', GAME_ID], {});
+  const enabledModIds = Object.keys(currentModsState).filter(
+    (modId) => currentModsState?.[modId]?.enabled
+  );
+  const mods = props.state?.persistent?.mods?.[GAME_ID] ?? {};
   const loFilePath = await ensureLOFile(context);
   const fileData = await fs.readFileAsync(loFilePath, { encoding: 'utf8' });
   try {
@@ -89,8 +91,10 @@ export async function deserialize(context: types.IExtensionContext): Promise<Loa
   }
 }
 
-export async function validate(prev: LoadOrder,
-                               current: LoadOrder): Promise<any> {
+export async function validate(
+  prev: LoadOrder,
+  current: LoadOrder
+): Promise<any> {
   // Nothing to validate really - the game does not read our load order file
   //  and we don't want to apply any restrictions either, so we just
   //  return.

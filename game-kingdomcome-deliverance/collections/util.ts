@@ -16,9 +16,11 @@ export function isModInCollection(collectionMod: types.IMod, mod: types.IMod) {
     util.testModReference(mod, rule.reference)) !== undefined;
 }
 
-export function genCollectionLoadOrder(loadOrder: string[],
-                                       mods: { [modId: string]: types.IMod },
-                                       collection?: types.IMod): string[] {
+export function genCollectionLoadOrder(
+  loadOrder: string[],
+  mods: { [modId: string]: types.IMod },
+  collection?: types.IMod
+): string[] {
   const sortedMods = loadOrder.filter(loId => {
     const modId = getModId(mods, loId);
     return (collection !== undefined)

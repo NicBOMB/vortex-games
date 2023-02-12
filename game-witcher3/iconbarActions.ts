@@ -23,7 +23,7 @@ function resetPriorities(props: IProps) {
   const { context, refreshFunc } = props;
   const state = context.api.getState();
   const profile = selectors.activeProfile(state);
-  const loadOrder = util.getSafe(state, ['persistent', 'loadOrder', profile.id], {});
+  const loadOrder = state?.persistent?.loadOrder?.[profile.id] ?? {};
   const newLO = Object.keys(loadOrder).reduce((accum, key) => {
     const loEntry = loadOrder[key];
     accum[key] = {
@@ -59,7 +59,7 @@ export const registerActions = (props: IProps) => {
     instanceIds => { makeOnContextImport(context, instanceIds[0]); },
     instanceIds => {
       const state = context.api.getState();
-      const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+      const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
       if (mods[instanceIds?.[0]]?.type !== 'collection') {
         return false;
       }
@@ -119,11 +119,11 @@ export const registerActions = (props: IProps) => {
           const gameMods = state.persistent.mods[GAME_ID] || {};
           const profile = selectors.activeProfile(state);
           const mods = Object.keys(gameMods)
-            .filter(key => util.getSafe(profile, ['modState', key, 'enabled'], false))
+            .filter(key => profile?.modState?.[key]?.enabled ?? false)
             .map(key => gameMods[key]);
           return util.sortMods(GAME_ID, mods, context.api)
             .then(sorted => {
-              const loadOrder = util.getSafe(state, ['persistent', 'loadOrder', profile.id], {});
+              const loadOrder = state?.persistent?.loadOrder?.[profile.id] ?? {};
               const filtered = Object.keys(loadOrder).filter(key =>
                 sorted.find(mod => mod.id === key) !== undefined);
               const manuallyAdded = Object.keys(loadOrder).filter(key => !filtered.includes(key));

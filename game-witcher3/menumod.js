@@ -38,7 +38,7 @@ const CACHE_FILENAME = 'vortex_menumod.cache'
 async function getExistingCache(state, activeProfile) {
   const stagingFolder = selectors.installPathForGame(state, GAME_ID);
   const modName = menuMod(activeProfile.name);
-  const mod = util.getSafe(state, ['persistent', 'mods', GAME_ID, modName], undefined);
+  const mod = state?.persistent?.mods?.[GAME_ID]?.[modName];
   if (mod === undefined) {
     return [];
   }
@@ -70,9 +70,9 @@ function readModData(filePath) {
 
 function populateCache(api, activeProfile, modIds, initialCacheValue) {
   const state = api.store.getState();
-  const loadOrder = util.getSafe(state, ['persistent', 'loadOrder', activeProfile.id], {});
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
-  const modState = util.getSafe(activeProfile, ['modState'], {});
+  const loadOrder = state?.persistent?.loadOrder?.[activeProfile.id] ?? {};
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
+  const modState = activeProfile?.modState ?? {};
 
   let nextAvailableId = Object.keys(loadOrder).length;
   const getNextId = () => {
@@ -121,7 +121,7 @@ function populateCache(api, activeProfile, modIds, initialCacheValue) {
   }, initialCacheValue !== undefined ? initialCacheValue : [])
   .then(newCache => {
     const modName = menuMod(activeProfile.name);
-    let mod = util.getSafe(state, ['persistent', 'mods', GAME_ID, modName], undefined);
+    let mod = state?.persistent?.mods?.[GAME_ID]?.[modName];
     if (mod?.installationPath === undefined) {
       log('warn', 'failed to ascertain installation path', modName);
       // We will create it on the next run.
@@ -132,7 +132,7 @@ function populateCache(api, activeProfile, modIds, initialCacheValue) {
   });
 }
 
-function convertFilePath(filePath, installPath) { 
+function convertFilePath(filePath, installPath) {
   // Pre-collections we would use absolute paths pointing
   //  to the menu mod input modifications; this will obviously
   //  work just fine on the curator's end, but relpaths should be used
@@ -180,8 +180,8 @@ async function onWillDeploy(api, deployment, activeProfile) {
     return;
   }
 
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
-  const modState = util.getSafe(activeProfile, ['modState'], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
+  const modState = activeProfile?.modState ?? {};
   const invalidModTypes = ['witcher3menumoddocuments'];
   const enabledMods = Object.keys(mods)
     .filter(key => !!modState[key]?.enabled && !invalidModTypes.includes(mods[key].type));
@@ -251,7 +251,7 @@ async function toIniFileObject(data, tempDest) {
 
 async function onDidDeploy(api, deployment, activeProfile) {
   const state = api.store.getState();
-  const loadOrder = util.getSafe(state, ['persistent', 'loadOrder', activeProfile.id], {});
+  const loadOrder = state?.persistent?.loadOrder?.[activeProfile.id] ?? {};
   const docFiles = deployment['witcher3menumodroot'].filter(file => (file.relPath.endsWith(PART_SUFFIX))
     && (file.relPath.indexOf(INPUT_XML_FILENAME) === -1));
 
@@ -259,8 +259,8 @@ async function onDidDeploy(api, deployment, activeProfile) {
     return;
   }
 
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
-  const modState = util.getSafe(activeProfile, ['modState'], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
+  const modState = activeProfile?.modState ?? {};
   let nextAvailableId = Object.keys(loadOrder).length;
   const getNextId = () => {
     return nextAvailableId++;
@@ -327,7 +327,7 @@ async function createMenuMod(api, modName, profile) {
 async function removeMenuMod(api, profile) {
   const state = api.store.getState();
   const modName = menuMod(profile.name);
-  const mod = util.getSafe(state, ['persistent', 'mods', profile.gameId, modName], undefined);
+  const mod = state?.persistent?.mods?.[profile.gameId]?.[modName];
   if (mod === undefined) {
     return Promise.resolve();
   }
@@ -465,7 +465,7 @@ async function writeCacheToFiles(api, profile) {
 async function ensureMenuMod(api, profile) {
   const state = api.store.getState();
   const modName = menuMod(profile.name);
-  const mod = util.getSafe(state, ['persistent', 'mods', profile.gameId, modName], undefined);
+  const mod = state?.persistent?.mods?.[profile.gameId]?.[modName];
   if (mod === undefined) {
     try {
       await createMenuMod(api, modName, profile);
@@ -503,7 +503,7 @@ async function exportMenuMod(api, profile, includedMods) {
       // The installed mods do not require a menu mod.
       return undefined;
     }
-    const mods = util.getSafe(api.getState(), ['persistent', 'mods', GAME_ID], {});
+    const mods = api.getState()?.persistent?.mods?.[GAME_ID] ?? {};
     const modId = Object.keys(mods).find(id => id === modName);
     if (modId === undefined) {
       throw new Error('Menu mod is missing');
@@ -520,7 +520,7 @@ async function exportMenuMod(api, profile, includedMods) {
 async function importMenuMod(api, profile, fileData) {
   try {
     const modName = await ensureMenuMod(api, profile);
-    const mod = util.getSafe(api.getState(), ['persistent', 'mods', profile.gameId, modName], undefined);
+    const mod = api.getState()?.persistent?.mods?.[profile.gameId]?.[modName];
     const installPath = selectors.installPathForGame(api.getState(), GAME_ID);
     const destPath = path.join(installPath, mod.installationPath);
     await restoreFileData(fileData, destPath);

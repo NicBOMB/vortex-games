@@ -108,7 +108,7 @@ class MasterChiefCollectionGame {
   async setup(discovery) {
     const xboxWarning = () => {
       this.context.api.showDialog('warn', 'Xbox Store Permissions', {
-        bbcode: 'Halo: MCC appears to be installed through the Xbox game store and your account ' 
+        bbcode: 'Halo: MCC appears to be installed through the Xbox game store and your account '
               + 'does not have permissions to write new files. This needs to be resolved manually '
               + 'before mods can be deployed [url=https://wiki.nexusmods.com/index.php/Modding_Halo:_The_Master_Chief_Collection_with_Vortex]as seen here.[/url]',
       }, [
@@ -142,7 +142,7 @@ class MasterChiefCollectionGame {
           ? xboxWarning() : Promise.reject(err));
     }
 
-    return (_GAME_STORE_ID === 'xbox') 
+    return (_GAME_STORE_ID === 'xbox')
       ? createXboxModsPath()
       : Promise.resolve();
   }
@@ -238,7 +238,7 @@ function install(context, files, destinationPath) {
   return identifyHaloGames(files).then(haloGames => {
     const internalIds = haloGames.map(game => game.internalId);
     context.api.store.dispatch(actions.setModAttribute(GAME_ID, path.basename(destinationPath, '.installing'), 'haloGames', internalIds));
-    
+
     return Promise.reduce(haloGames, (accum, haloGame) => {
       const filtered = files.filter(file => {
         const segments = file.split(path.sep).filter(seg => !!seg);
@@ -353,20 +353,20 @@ module.exports = {
       placement: 'table',
       customRenderer: (mod) => {
         const createImgDiv = (entry, idx) => {
-          return React.createElement('div', { className: 'halo-img-div', key: `${entry.internalId}-${idx}` }, 
+          return React.createElement('div', { className: 'halo-img-div', key: `${entry.internalId}-${idx}` },
             React.createElement('img', { className: 'halogameimg', src: `file://${entry.img}` }),
             React.createElement('span', {}, entry.name))
         };
 
-        const internalIds = util.getSafe(mod, ['attributes', 'haloGames'], []);
+        const internalIds = mod?.attributes?.haloGames ?? [];
         const haloEntries = Object.keys(HALO_GAMES)
           .filter(key => internalIds.includes(HALO_GAMES[key].internalId))
           .map(key => HALO_GAMES[key]);
 
-        return React.createElement(FlexLayout, { type: 'row' }, 
+        return React.createElement(FlexLayout, { type: 'row' },
           React.createElement(FlexLayout.Flex, { className: 'haloimglayout' }, haloEntries.map((entry, idx) => createImgDiv(entry, idx))));
       },
-      calc: (mod) => util.getSafe(mod, ['attributes', 'haloGames'], undefined),
+      calc: (mod) => mod?.attributes?.haloGames,
       filter: new OptionsFilter(
         [].concat([{ value: OptionsFilter.EMPTY, label: '<None>' }],
         Object.keys(HALO_GAMES)
@@ -378,7 +378,7 @@ module.exports = {
       edit: {},
       isSortable: false,
       isGroupable: (mod) => {
-        const internalIds = util.getSafe(mod, ['attributes', 'haloGames'], []);
+        const internalIds = mod?.attributes?.haloGames ?? [];
         const haloEntries = Object.keys(HALO_GAMES)
           .filter(key => internalIds.includes(HALO_GAMES[key].internalId))
           .map(key => HALO_GAMES[key]);

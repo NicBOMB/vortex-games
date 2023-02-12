@@ -74,7 +74,7 @@ function migrate101(api, oldVersion) {
   }
 
   const state = api.store.getState();
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
   const hasMods = Object.keys(mods).length > 0;
 
   if (!hasMods) {

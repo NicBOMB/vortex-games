@@ -7,16 +7,14 @@ import { IDeployedFile, IDeployment } from './types';
 export async function getDeployment(api: types.IExtensionApi,
                                     includedMods?: string[]): Promise<IDeployment> {
   const state = api.getState();
-  const discovery = util.getSafe(state,
-    ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
   const game = util.getGame(GAME_ID);
   if ((game === undefined) || (discovery?.path === undefined)) {
     log('error', 'game is not discovered', GAME_ID);
     return undefined;
   }
 
-  const mods: { [modId: string]: types.IMod } = util.getSafe(state,
-    ['persistent', 'mods', GAME_ID], {});
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? {};
 
   const installationDirectories = Object.values(mods)
     .filter(mod => (includedMods !== undefined)

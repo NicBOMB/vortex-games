@@ -10,8 +10,8 @@ function getMergeInventory(context: types.IExtensionContext) {
   // Provided with a pattern, attempts to retrieve element values
   //  from any element keys that match the pattern inside the merge inventory file.
   const state = context.api.store.getState();
-  const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
-  const scriptMerger = util.getSafe(discovery, ['tools', SCRIPT_MERGER_ID], undefined);
+  const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
+  const scriptMerger = discovery?.tools?.[SCRIPT_MERGER_ID];
   if ((scriptMerger === undefined) || (scriptMerger.path === undefined)) {
     return Bluebird.resolve([]);
   }
@@ -39,8 +39,7 @@ export function getMergedModNames(context: types.IExtensionContext) {
         return Promise.resolve([]);
       }
       const state = context.api.getState();
-      const discovery = util.getSafe(state,
-        ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+      const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
       const modsPath = path.join(discovery.path, 'Mods');
       const mergeEntry = mergeInventory?.MergeInventory?.Merge;
       if (mergeEntry === undefined) {
@@ -90,8 +89,7 @@ export function getNamesOfMergedMods(context: types.IExtensionContext): Bluebird
         return Promise.resolve([]);
       }
       const state = context.api.getState();
-      const discovery = util.getSafe(state,
-        ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+      const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
       const modsPath = path.join(discovery.path, 'Mods');
       const modNames = await mergeInventory.MergeInventory.Merge.reduce(async (accumP, iter) => {
         const accum = await accumP;

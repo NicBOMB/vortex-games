@@ -80,7 +80,7 @@ function main(context) {
       await Promise.map(files, async entry => {
         // only act if we definitively know which mod owns the file
         if (entry.candidates.length === 1) {
-          const mod = util.getSafe(state.persistent.mods, [GAME_ID, entry.candidates[0]], undefined);
+          const mod = state.persistent.mods?.[GAME_ID]?.[entry.candidates[0]];
           if (mod?.type === undefined) {
             // Mod no longer installed ?
             return Promise.resolve();

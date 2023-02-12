@@ -123,9 +123,9 @@ function refreshModList(context, discoveryPath) {
   const state = context.api.store.getState();
   const profile = selectors.activeProfile(state);
   const installationPath = selectors.installPathForGame(state, GAME_ID);
-  const mods = util.getSafe(state, ['persistent', 'mods', GAME_ID], []);
+  const mods = state?.persistent?.mods?.[GAME_ID] ?? [];
   const modKeys = Object.keys(mods);
-  const modState = util.getSafe(profile, ['modState'], {});
+  const modState = profile?.modState ?? {};
   const enabled = modKeys.filter(mod => !!modState[mod] && modState[mod].enabled);
   const disabled = modKeys.filter(dis => !enabled.includes(dis));
 
@@ -337,12 +337,12 @@ function main(context: types.IExtensionContext) {
   context.once(() => {
     context.api.events.on('mod-enabled', (profileId, modId) => {
       const state = context.api.store.getState();
-      const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+      const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
       if (discovery?.path === undefined) {
         return;
       }
 
-      const profile = util.getSafe(state, ['persistent', 'profiles', profileId], undefined);
+      const profile = state?.persistent?.profiles?.[profileId];
       if (!!profile && (profile.gameId === GAME_ID) && (_MODS_STATE.display.indexOf(modId) === -1)) {
         refreshModList(context, discovery.path);
       }
@@ -356,7 +356,7 @@ function main(context: types.IExtensionContext) {
         return;
       }
 
-      const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', GAME_ID], undefined);
+      const discovery = state?.settings?.gameMode?.discovered?.[GAME_ID];
       if ((discovery === undefined) || (discovery.path === undefined)) {
         // should never happen and if it does it will cause errors elsewhere as well
         log('error', 'kingdomcomedeliverance was not discovered');
@@ -364,9 +364,9 @@ function main(context: types.IExtensionContext) {
       }
 
       const modsOrderFilePath = path.join(discovery.path, modsPath(), MODS_ORDER_FILENAME);
-      const managedMods = util.getSafe(state, ['persistent', 'mods', GAME_ID], {});
+      const managedMods = state?.persistent?.mods?.[GAME_ID] ?? {};
       const modKeys = Object.keys(managedMods);
-      const modState = util.getSafe(profile, ['modState'], {});
+      const modState = profile?.modState ?? {};
       const enabled = modKeys.filter(mod => !!modState[mod] && modState[mod].enabled);
       const disabled = modKeys.filter(dis => !enabled.includes(dis));
       getManuallyAddedMods(disabled, enabled, modsOrderFilePath, context.api)
@@ -393,7 +393,7 @@ function main(context: types.IExtensionContext) {
       }
 
       const loadOrder = state.persistent['loadOrder']?.[profileId] ?? [];
-      const discovery = util.getSafe(state, ['settings', 'gameMode', 'discovered', profile.gameId], undefined);
+      const discovery = state?.settings?.gameMode?.discovered?.[profile.gameId];
 
       if ((discovery === undefined) || (discovery.path === undefined)) {
         // should never happen and if it does it will cause errors elsewhere as well
@@ -406,11 +406,11 @@ function main(context: types.IExtensionContext) {
 
       return refreshModList(context, discovery.path)
         .then(() => {
-          let missing = loadOrder
-            .filter(mod => !listHasMod(transformId(mod), _MODS_STATE.enabled)
-                        && !listHasMod(transformId(mod), _MODS_STATE.disabled)
-                        && listHasMod(transformId(mod), _MODS_STATE.display))
-            .map(mod => transformId(mod)) || [];
+          let missing = loadOrder // FIXME: as unknown as string
+            .filter(mod => !listHasMod(transformId(mod as unknown as string), _MODS_STATE.enabled)
+                        && !listHasMod(transformId(mod as unknown as string), _MODS_STATE.disabled)
+                        && listHasMod(transformId(mod as unknown as string), _MODS_STATE.display))
+            .map(mod => transformId(mod as unknown as string)) || [];
 
           // This is theoretically unecessary - but it will ensure no duplicates
           //  are added.
@@ -445,9 +445,9 @@ function mapStateToProps(state) {
   const gameId = profile?.gameId || '';
   return {
     profile,
-    modState: util.getSafe(profile, ['modState'], {}),
-    mods: util.getSafe(state, ['persistent', 'mods', gameId], []),
-    order: util.getSafe(state, ['persistent', 'loadOrder', profileId], []),
+    modState: profile?.modState ?? {},
+    mods: state?.persistent?.mods?.[gameId] ?? [],
+    order: state?.persistent?.loadOrder?.[profileId] ?? [],
   };
 }
 
